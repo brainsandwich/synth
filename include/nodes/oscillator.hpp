@@ -17,7 +17,7 @@ namespace audio {
 		virtual void update(double sampleRate) override {
 			float base_freq = frequency.value > MIN_FREQ ? frequency.value : MIN_FREQ;
 			float mod_freq = modulation.value > MIN_FREQ ? modulation.value : MIN_FREQ;
-			float freq = (base_freq + mod_freq) > MIN_FREQ ? (base_freq + mod_freq) : MIN_FREQ;
+			float freq = (base_freq + base_freq * mod_freq) > MIN_FREQ ? (base_freq + base_freq * mod_freq) : MIN_FREQ;
 
 			double inc = SineTable::SIZE * freq / sampleRate;
 			offset = offset >= SineTable::SIZE ? offset - SineTable::SIZE : offset;

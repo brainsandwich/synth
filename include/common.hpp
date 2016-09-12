@@ -61,7 +61,7 @@ namespace audio {
 		static float wave[SIZE];
 		static void init() {
 			for (std::size_t i = 0; i < SIZE; i++)
-				wave[i] = (i < SIZE / 2) ? 1.0 : 0.0;
+				wave[i] = (i < SIZE / 2) ? 1.0f : -1.0f;
 		}
 	};
 
@@ -70,7 +70,7 @@ namespace audio {
 		static float wave[SIZE];
 		static void init() {
 			for (std::size_t i = 0; i < SIZE; i++)
-				wave[i] = (float) i / (float) SIZE;
+				wave[i] = 2.0f * (float) i / (float) SIZE - 1.0f;
 		}
 	};
 
