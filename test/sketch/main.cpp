@@ -59,21 +59,6 @@ struct LFO {
 	{
 		osc.destination.connect(&gain.input);
 	}
-
-	LFO& setShape(const Shape& shape) {
-		switch(shape) {
-			case Shape::SINE:
-				osc.shape.value = 0.0f;
-				break;
-			case Shape::SAW:
-				osc.shape.value = 0.5f;
-				break;
-			case Shape::SQUARE:
-				osc.shape.value = 1.0f;
-				break;
-		}
-		return *this;
-	}
 };
 
 int main(int argc, char const *argv[]) {
@@ -99,18 +84,17 @@ int main(int argc, char const *argv[]) {
 	std::vector<std::shared_ptr<audio::Gain>> gains(voices);
 
 	audio::Gain output(&context);
-	output.destination.connect(&device.output[0]);
+	output.destination.connect(&device.output.getMonoInput(0));
 	output.gain.value = 1.0f;
 
 	audio::LowPassFilter filter(&context);
 	filter.cutoff.value = 1200.0f;
-	filter.quality.value = 0.8f;
+	filter.quality.value = 3.5f;
 	filter.destination.connect(&output.input);
-
 
 	for (std::size_t i = 0; i < voices; i++) {
 		oscillators[i] = std::make_shared<audio::Oscillator>(&context);
-		oscillators[i]->shape.value = 1.0f;
+		oscillators[i]->wavetable = &audio::squaretable;
 
 		gains[i] = std::make_shared<audio::Gain>(&context);
 		gains[i]->gain.value = (float) (voices - i) / (float) voices;
@@ -126,41 +110,21 @@ int main(int argc, char const *argv[]) {
 		multipliers[i]->destination.connect(&oscillators[i]->frequency);
 	}
 
-	// audio::Oscillator osc(&context);
-	// osc.frequency.value = 100.0;
-	// osc.shape.value = 0.0f;
-
-	// audio::Gain oscGain(&context);
-	// oscGain.gain.value = 1.0f;
-	// oscGain.destination.connect(&device.output[0]);
-	// osc.destination.connect(&oscGain.input);
-
 	float base = 10.0f;
 
 	LFO lfo(&context);
-	lfo.setShape(Shape::SQUARE);
-	lfo.osc.frequency.value = base / 2.0f;
-	lfo.gain.gain.value = 0.5f;
+	lfo.osc.wavetable = &audio::sinetable;
+	lfo.osc.frequency.value = base / 1.0f;
+	lfo.gain.gain.value = 0.1f;
 	for (std::size_t i = 0; i < voices; i++)
 		lfo.gain.destination.connect(&oscillators[i]->modulation);
 
 	LFO sublfo(&context);
-	sublfo.setShape(Shape::SINE);
-	sublfo.osc.frequency.value = base / 5.0f;
-	sublfo.gain.gain.value = 20.0f;
-	sublfo.gain.destination.connect(&lfo.gain.gain);
-
-	LFO wawlfo(&context);
-	wawlfo.setShape(Shape::SINE);
-	wawlfo.osc.frequency.value = base / 10.0f;
-	wawlfo.gain.gain.value = 20.0f;
-	wawlfo.gain.destination.connect(&lfo.osc.modulation);
-
-	audio::Gain cutoffgain(&context);
-	cutoffgain.gain.value = 1900.0f;
-	cutoffgain.offset.value = 2500.0f;
-	cutoffgain.destination.connect(&filter.cutoff);
-	sublfo.osc.destination.connect(&cutoffgain.input);
+	sublfo.osc.frequency.value = base / 30.0f;
+	sublfo.osc.unipolar = true;
+	sublfo.gain.gain.value = 3500.0f;
+	sublfo.gain.offset.value = 350.0f;
+	sublfo.gain.destination.connect(&filter.cutoff);
 
 	device.open(2, 44100);
 	device.start();
