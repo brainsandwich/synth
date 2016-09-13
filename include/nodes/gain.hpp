@@ -5,10 +5,10 @@
 namespace audio {
 
 	struct Gain : Node {
-		Signal input;
-		Signal gain;
-		Signal offset;
-		Signal destination;
+		MonoSignal input;
+		MonoSignal gain;
+		MonoSignal offset;
+		MonoSignal destination;
 
 		Gain(Context* context) : Node(context) {}
 		virtual void update(double sampleRate) override {

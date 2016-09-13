@@ -18,8 +18,8 @@ namespace audio {
 	    // Working only with stereo for now
 	    for (unsigned long i = 0; i < framesPerBuffer; i++) {
 	    	self.context->update(self.streamInfo.sampleRate);
-	    	*out++ = self.output.left.value;
-	    	*out++ = self.output.right.value;
+	    	*out++ = self.output.destination.left;
+	    	*out++ = self.output.destination.right;
 	    }
 	    return 0;
 	}

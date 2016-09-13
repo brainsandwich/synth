@@ -5,10 +5,10 @@
 namespace audio {
 	
 	struct Filter : Node {
-		Signal input;
-		Signal quality;
-		Signal cutoff;
-		Signal destination;
+		MonoSignal input;
+		MonoSignal quality;
+		MonoSignal cutoff;
+		MonoSignal destination;
 		Filter(Context* context) : Node(context) {}
 		virtual void update(double sampleRate) = 0;
 	};

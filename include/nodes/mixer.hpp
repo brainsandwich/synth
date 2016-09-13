@@ -7,28 +7,42 @@
 namespace audio {
 	
 	struct Mixer : Node {
-		std::vector<std::shared_ptr<Signal>> inputs;
-		Signal left;
-		Signal right;
+		std::vector<std::shared_ptr<MonoSignal>> monoinputs;
+		std::vector<std::shared_ptr<StereoSignal>> stereoinputs;
+		StereoSignal destination;
 
 		Mixer(Context* context) : Node(context) {}
 		virtual void update(double sampleRate) override {
-			left.value = 0.0f;
-			right.value = 0.0f;
-			for (auto& sig: inputs) {
+			destination.left = 0.0f;
+			destination.right = 0.0f;
+
+			for (auto& sig: monoinputs) {
 				float value = sig->value;
-				left.value += value / (float) inputs.size();
-				right.value += value / (float) inputs.size();
+				destination.left += value;
+				destination.right += value;
 			}
-			left.value = left.value;
-			right.value = right.value;
+
+			for (auto& sig: stereoinputs) {
+				destination.left += sig->left;
+				destination.right += sig->right;
+			}
+
+			destination.update();
 		}
 
-		Signal& operator[](std::size_t index) {
-			if (index >= inputs.size())
-				inputs.resize(index + 1, std::make_unique<Signal>());
-			
-			return *inputs[index].get();
+		MonoSignal& getMonoInput(std::size_t index) {
+			if (index >= monoinputs.size())
+				monoinputs.resize(index + 1, std::make_shared<MonoSignal>());
+
+			std::cout << index << " " << monoinputs.size() << std::endl;
+			return *(monoinputs[index].get());
+		}
+
+		StereoSignal& getStereoInput(std::size_t index) {
+			if (index >= stereoinputs.size())
+				stereoinputs.resize(index + 1, std::make_shared<StereoSignal>());
+
+			return *(stereoinputs[index].get());
 		}
 	};
 
