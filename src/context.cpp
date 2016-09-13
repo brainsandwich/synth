@@ -32,9 +32,9 @@ namespace audio {
 			return;
 		}
 
-		SineTable::init();
-		SquareTable::init();
-		SawTable::init();
+		generate_sine(sinetable);
+		generate_sawtooth(sawtable);
+		generate_square(squaretable);
 
 		initialized = true;
 	}

@@ -65,13 +65,27 @@ namespace audio {
 		}
 	};
 
-	struct SawTable {
-		static const std::size_t SIZE = 2048;
-		static float wave[SIZE];
-		static void init() {
-			for (std::size_t i = 0; i < SIZE; i++)
-				wave[i] = 2.0f * (float) i / (float) SIZE - 1.0f;
-		}
+	// -------------------------------------------------------------
+	// Wave Tables
+
+	struct WaveTable {
+	protected:
+		std::vector<float> data;
+
+	public:
+		WaveTable(std::size_t size = 0)
+			: data(size) {}
+
+		float& operator[](std::size_t index) { return data[index]; }
+		std::size_t size() const { return data.size(); }
+		void resize(std::size_t size) { data.resize(size); }
 	};
 
+	extern WaveTable sinetable;
+	extern WaveTable sawtable;
+	extern WaveTable squaretable;
+
+	void generate_sine(WaveTable& table);
+	void generate_sawtooth(WaveTable& table);
+	void generate_square(WaveTable& table);
 }
