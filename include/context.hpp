@@ -2,33 +2,31 @@
 
 #include "device.hpp"
 #include "common.hpp"
-#include "nodes/node.hpp"
 
-#include <map>
 #include <iostream>
+#include <map>
+#include <thread>
 
 namespace audio {
 
-	class Context {
-		friend struct Node;
+	namespace modular { class Instrument; }
 
+	class Context {
 	protected:
 		bool initialized = false;
 		std::vector<Device*> devices;
-		std::vector<Node*> nodes;
+		modular::Instrument* instrument = nullptr;
 
 		void addDevice(Device* device);
 		void rmvDevice(Device* device);
-		void addNode(Node* node);
-		void rmvNode(Node* node);
 
 	public:
 		Context();
 		virtual ~Context();
-		void init();
+		void setInstrument(modular::Instrument* instrument);
+		void update(double sampleRate);
 		DeviceInfo getDeviceInfo(int index) const;
 		HostApi getHostApi(int index) const;
-		void update(double sampleRate);
 
 		template <typename Output> void listHostApis(Output out) const {
 			if (!initialized) {

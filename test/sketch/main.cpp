@@ -46,21 +46,6 @@ void printDevicesInfo(InputDevices first, InputDevices last, InputHostApis hostA
 	}
 }
 
-enum class Shape {
-	SINE, SAW, SQUARE
-};
-
-struct LFO {
-	audio::Oscillator osc;
-	audio::Gain gain;
-	LFO(audio::Context* context)
-		: osc(audio::Oscillator(context))
-		, gain(audio::Gain(context))
-	{
-		osc.destination.connect(&gain.input);
-	}
-};
-
 int main(int argc, char const *argv[]) {
 	using namespace std::chrono_literals;
 
@@ -77,59 +62,20 @@ int main(int argc, char const *argv[]) {
 	int devIndex = hostApis[0].defaultOutputDeviceIndex;
 	std::cout << "Opening output device " << devIndex << std::endl;
 	audio::Device device(&context, devIndex);
-
-	std::size_t voices = 4;
-	std::vector<std::shared_ptr<audio::Oscillator>> oscillators(voices);
-	std::vector<std::shared_ptr<audio::Gain>> multipliers(voices);
-	std::vector<std::shared_ptr<audio::Gain>> gains(voices);
-
-	audio::Gain output(&context);
-	output.destination.connect(&device.output.getMonoInput(0));
-	output.gain.value = 1.0f;
-
-	audio::LowPassFilter filter(&context);
-	filter.cutoff.value = 1200.0f;
-	filter.quality.value = 3.5f;
-	filter.destination.connect(&output.input);
-
-	for (std::size_t i = 0; i < voices; i++) {
-		oscillators[i] = std::make_shared<audio::Oscillator>(&context);
-		oscillators[i]->wavetable = &audio::squaretable;
-
-		gains[i] = std::make_shared<audio::Gain>(&context);
-		gains[i]->gain.value = (float) (voices - i) / (float) voices;
-		gains[i]->destination.connect(&filter.input);
-		oscillators[i]->destination.connect(&gains[i]->input);
-	}
-
-	oscillators[0]->frequency.value = 75.0f;
-	for (std::size_t i = 1; i < voices; i++) {
-		multipliers[i] = std::make_shared<audio::Gain>(&context);
-		multipliers[i]->gain.value = 1.5f * i;
-		oscillators[0]->frequency.connect(&multipliers[i]->input);
-		multipliers[i]->destination.connect(&oscillators[i]->frequency);
-	}
-
-	float base = 10.0f;
-
-	LFO lfo(&context);
-	lfo.osc.wavetable = &audio::sinetable;
-	lfo.osc.frequency.value = base / 1.0f;
-	lfo.gain.gain.value = 0.1f;
-	for (std::size_t i = 0; i < voices; i++)
-		lfo.gain.destination.connect(&oscillators[i]->modulation);
-
-	LFO sublfo(&context);
-	sublfo.osc.frequency.value = base / 30.0f;
-	sublfo.osc.unipolar = true;
-	sublfo.gain.gain.value = 3500.0f;
-	sublfo.gain.offset.value = 350.0f;
-	sublfo.gain.destination.connect(&filter.cutoff);
-
 	device.open(2, 44100);
-	device.start();
+
+	audio::modular::Instrument synthesizer;
+	context.setInstrument(&synthesizer);
+	
+	audio::modular::Oscillator osc(&synthesizer);
+	osc.frequency.value = 1000.0f;
+
+	audio::modular::Mixer mixer(&synthesizer);
+	osc.destination.connect(&mixer.getMonoInput(0));
+	mixer.destination.connect(&device.output);
 
 	std::size_t count = 0;
+	device.start();
 	while (true) {
 		std::this_thread::sleep_for(10ms);
 		if (count++ >= 3000)
