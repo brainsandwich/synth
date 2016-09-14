@@ -12,6 +12,9 @@ namespace audio {
 
 	const float MIN_FREQ = 0.00001f;
 	
+	// -------------------------------------------------------------
+	// Info
+
 	struct HostApi {
 		int index;
 		std::string name;
@@ -47,6 +50,9 @@ namespace audio {
 		Float32,
 		Float64
 	};
+
+	// -------------------------------------------------------------
+	// Signals
 
 	struct Signal {
 		virtual ~Signal() {}

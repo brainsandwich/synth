@@ -2,11 +2,9 @@
 
 #include "portaudio.h"
 #include "common.hpp"
-#include "nodes/mixer.hpp"
 
 namespace audio {
 
-	struct Node;
 	class Context;
 	class Device {
 		friend class Context;
@@ -24,7 +22,7 @@ namespace audio {
 
 	public:
 		Device(Context* context, int index);
-		Mixer output;
+		StereoSignal output;
 
 		DeviceInfo deviceInfo;
 		StreamInfo streamInfo;
