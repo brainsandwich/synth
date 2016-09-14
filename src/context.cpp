@@ -1,19 +1,11 @@
 #include "context.hpp"
+#include "modular/instrument.hpp"
 
 #include <iostream>
 #include <algorithm>
+#include <chrono>
 
 namespace audio {
-
-	void Context::addNode(Node* node) {
-		nodes.push_back(node);
-	}
-
-	void Context::rmvNode(Node* node) {
-		auto iter = std::find(nodes.begin(), nodes.end(), node);
-		if (iter != nodes.end())
-			nodes.erase(iter);
-	}
 
 	void Context::addDevice(Device* device) {
 		devices.push_back(device);
@@ -25,6 +17,10 @@ namespace audio {
 			devices.erase(iter);
 	}
 
+	void Context::setInstrument(modular::Instrument* instrument) {
+		this->instrument = instrument;
+	}
+
 	Context::Context() {
 		int err = Pa_Initialize();
 		if (err < 0) {
@@ -32,15 +28,21 @@ namespace audio {
 			return;
 		}
 
-		SineTable::init();
-		SquareTable::init();
-		SawTable::init();
+		generate_sine(sinetable);
+		generate_sawtooth(sawtable);
+		generate_square(squaretable);
 
 		initialized = true;
 	}
+
 	Context::~Context() {
 		if (initialized)
 			Pa_Terminate();
+	}
+
+	void Context::update(double sampleRate) {
+		if (instrument)
+			instrument->update(sampleRate);
 	}
 
 	DeviceInfo Context::getDeviceInfo(int index) const {
@@ -79,11 +81,6 @@ namespace audio {
 		hostApi.defaultInputDeviceIndex = hostApiInfo->defaultInputDevice;
 		hostApi.defaultOutputDeviceIndex = hostApiInfo->defaultOutputDevice;
 		return hostApi;
-	}
-
-	void Context::update(double sampleRate) {
-		for (auto& node: nodes)
-			node->update(sampleRate);
 	}
 
 }

@@ -18,8 +18,8 @@ namespace audio {
 	    // Working only with stereo for now
 	    for (unsigned long i = 0; i < framesPerBuffer; i++) {
 	    	self.context->update(self.streamInfo.sampleRate);
-	    	*out++ = self.output.left.value;
-	    	*out++ = self.output.right.value;
+	    	*out++ = self.output.left;
+	    	*out++ = self.output.right;
 	    }
 	    return 0;
 	}
@@ -27,7 +27,6 @@ namespace audio {
 	Device::Device(Context* context, int index)
 		: index(index)
 		, context(context)
-		, output(context)
 	{
 		deviceInfo = context->getDeviceInfo(index);
 	}

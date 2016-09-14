@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include <cmath>
 
@@ -11,6 +12,9 @@ namespace audio {
 
 	const float MIN_FREQ = 0.00001f;
 	
+	// -------------------------------------------------------------
+	// Info
+
 	struct HostApi {
 		int index;
 		std::string name;
@@ -47,31 +51,54 @@ namespace audio {
 		Float64
 	};
 
-	struct SineTable {
-		static const std::size_t SIZE = 2048;
-		static float wave[SIZE];
-		static void init() {
-			for (std::size_t i = 0; i < SIZE; i++)
-				wave[i] = sin(((float) i * 2.0 * PI) / ((float) SIZE));
-		}
+	// -------------------------------------------------------------
+	// Signals
+
+	struct Signal {
+		virtual ~Signal() {}
+		virtual void update() = 0;
 	};
 
-	struct SquareTable {
-		static const std::size_t SIZE = 2048;
-		static float wave[SIZE];
-		static void init() {
-			for (std::size_t i = 0; i < SIZE; i++)
-				wave[i] = (i < SIZE / 2) ? 1.0f : -1.0f;
-		}
+	struct MonoSignal : Signal {
+		std::vector<MonoSignal*> targets;
+		float value = 0.0f;
+
+		void update() override;
+		void connect(MonoSignal* signal);
+		void disconnect(MonoSignal* signal);
 	};
 
-	struct SawTable {
-		static const std::size_t SIZE = 2048;
-		static float wave[SIZE];
-		static void init() {
-			for (std::size_t i = 0; i < SIZE; i++)
-				wave[i] = 2.0f * (float) i / (float) SIZE - 1.0f;
-		}
+	struct StereoSignal : Signal {
+		std::vector<StereoSignal*> targets;
+		float left = 0.0f;
+		float right = 0.0f;
+
+		void update() override;
+		void connect(StereoSignal* signal);
+		void disconnect(StereoSignal* signal);
 	};
 
+	// -------------------------------------------------------------
+	// Wave Tables
+
+	struct WaveTable {
+	protected:
+		std::vector<float> data;
+
+	public:
+		WaveTable(std::size_t size = 0)
+			: data(size) {}
+
+		float& operator[](std::size_t index) { return data[index]; }
+		std::size_t size() const { return data.size(); }
+		void resize(std::size_t size) { data.resize(size); }
+	};
+
+	extern WaveTable sinetable;
+	extern WaveTable sawtable;
+	extern WaveTable squaretable;
+
+	void generate_sine(WaveTable& table);
+	void generate_sawtooth(WaveTable& table);
+	void generate_square(WaveTable& table);
 }
