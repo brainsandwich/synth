@@ -7,7 +7,7 @@ os:
 addons:
   apt:
     sources:
-      - portaudio
+      - portaudio19-dev
 branches:
   only:
     - master
