@@ -67,17 +67,33 @@ int main(int argc, char const *argv[]) {
 	audio::modular::Instrument synthesizer;
 	context.setInstrument(&synthesizer);
 	
+	audio::modular::Enveloppe enveloppe(&synthesizer);
+	enveloppe.attack.value = 0.01f;
+	enveloppe.decay.value = 0.01f;
+	enveloppe.release.value = 0.01f;
+	enveloppe.attackLevel.value = 1.0f;
+	enveloppe.sustainLevel.value = 1.0f;
+
+	audio::modular::Oscillator trigger(&synthesizer);
+	trigger.wavetable = &audio::squaretable;
+	trigger.unipolar = true;
+	trigger.frequency.value = 20.0f;
+	trigger.destination.connect(&enveloppe.gate);
+
 	audio::modular::Oscillator osc(&synthesizer);
-	osc.frequency.value = 1000.0f;
+	osc.frequency.value = 500.0f;
+	osc.destination.connect(&enveloppe.input);
+	// enveloppe.destination.connect(&osc.modulation);
 
 	audio::modular::Mixer mixer(&synthesizer);
-	osc.destination.connect(&mixer.getMonoInput(0));
+	enveloppe.destination.connect(&mixer.getMonoInput(0));
 	mixer.destination.connect(&device.output);
 
 	std::size_t count = 0;
 	device.start();
 	while (true) {
 		std::this_thread::sleep_for(10ms);
+		std::cout << "env: " << enveloppe.enveloppe.value << std::endl;
 		if (count++ >= 3000)
 			break;
 	}

@@ -5,3 +5,4 @@
 #include "modular/nodes/mixer.hpp"
 #include "modular/nodes/gain.hpp"
 #include "modular/nodes/filter.hpp"
+#include "modular/nodes/enveloppe.hpp"
