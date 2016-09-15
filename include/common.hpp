@@ -101,4 +101,17 @@ namespace audio {
 	void generate_sine(WaveTable& table);
 	void generate_sawtooth(WaveTable& table);
 	void generate_square(WaveTable& table);
+
+	// -------------------------------------------------------------
+	// Math
+
+	template <typename T> 
+	T clamp(T value, T min, T max) {
+		return std::min(std::max(value, min), max);
+	}
+
+	template <typename T>
+	T exp(T value) {
+		return 1.0 + value + (value * value) / 2.0;
+	}
 }
