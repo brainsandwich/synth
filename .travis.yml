@@ -8,6 +8,10 @@ addons:
   apt:
     sources:
       - portaudio19-dev
+      - george-edison55-precise-backports
+    packages:
+      - cmake
+      - cmake-data
 branches:
   only:
     - master
