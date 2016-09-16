@@ -1,7 +1,7 @@
 #pragma once
 
-#include "device.hpp"
-#include "common.hpp"
+#include "core/device.hpp"
+#include "core/common.hpp"
 
 #include <iostream>
 #include <map>

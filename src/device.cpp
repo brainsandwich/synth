@@ -1,6 +1,6 @@
-#include "device.hpp"
-#include "context.hpp"
-#include "common.hpp"
+#include "core/device.hpp"
+#include "core/context.hpp"
+#include "core/common.hpp"
 
 #include <iostream>
 

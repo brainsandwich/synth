@@ -1,6 +1,4 @@
 #pragma once
 
-#include "common.hpp"
-#include "device.hpp"
-#include "context.hpp"
+#include "core/core.hpp"
 #include "modular/modular.hpp"

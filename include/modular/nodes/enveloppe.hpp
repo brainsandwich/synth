@@ -1,5 +1,7 @@
 #pragma once
 
+#include "modular/nodes/node.hpp"
+
 namespace audio {
 	namespace modular {
 		
