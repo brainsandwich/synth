@@ -1,12 +1,12 @@
-#include "modular/nodes/node.hpp"
-#include "modular/instrument.hpp"
+#include "core/node.hpp"
+#include "core/context.hpp"
 
 #include <algorithm>
 #include <iostream>
 
-namespace audio {
-	namespace modular {
-		Node::Node(Instrument* context)
+namespace uss {
+	namespace core {
+		Node::Node(Context* context)
 			: context(context)
 		{
 			context->addNode(this);

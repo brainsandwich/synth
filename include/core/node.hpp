@@ -4,14 +4,13 @@
 
 #include <vector>
 
-namespace audio {
-	namespace modular {
-		class Instrument;
-		
+namespace uss {
+	namespace core {
+		class Context;
 		struct Node {
-			Instrument* context = nullptr;
+			Context* context = nullptr;
 
-			Node(Instrument* context);
+			Node(Context* context);
 			virtual ~Node();
 			virtual void update(double sampleRate) {}
 		};

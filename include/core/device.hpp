@@ -1,36 +1,26 @@
 #pragma once
 
-#include "portaudio.h"
 #include "core/common.hpp"
 
-namespace audio {
+namespace uss {
+	namespace core {
 
-	class Context;
-	class Device {
-		friend class Context;
-	protected:
-		int index;
-		Context* context = nullptr;
-		PaStream* stream = nullptr;
-		double time = 0.0;
+		class Context;
+		class Device {
+			friend class Context;
+		protected:
+			Context* context = nullptr;
 
-		static int callback(const void *inputBuffer, void *outputBuffer,
-	                       unsigned long framesPerBuffer,
-	                       const PaStreamCallbackTimeInfo* timeInfo,
-	                       PaStreamCallbackFlags statusFlags,
-	                       void* userData);
+		public:
+			Device(Context* context, int index);
 
-	public:
-		Device(Context* context, int index);
-		StereoSignal output;
+			int index;
+			int channels;
+			double latency;
+			Format format;
+			StereoSignal output;
+			DeviceInfo deviceInfo;
+		};
 
-		DeviceInfo deviceInfo;
-		StreamInfo streamInfo;
-
-		StreamInfo getStreamInfo() const;
-		Device& open(unsigned int channels, unsigned int sampleRate, const Format& format = Format::Float32, bool isInput = false);
-		Device& start();
-		Device& stop();
-		Device& close();
-	};
+	}
 }

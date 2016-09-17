@@ -7,7 +7,7 @@
 #include <chrono>
 #include <thread>
 
-#include <audio.hpp>
+#include <uss.hpp>
 
 template <typename Input>
 void printHostApis(Input first, Input last) {
@@ -49,48 +49,49 @@ void printDevicesInfo(InputDevices first, InputDevices last, InputHostApis hostA
 int main(int argc, char const *argv[]) {
 	using namespace std::chrono_literals;
 
-	audio::Context context;
+	uss::core::init_wavetables();
+	uss::core::Context context;
 
-	std::vector<audio::HostApi> hostApis;
+	std::vector<uss::core::HostApi> hostApis;
 	context.listHostApis(std::back_inserter(hostApis));
 	printHostApis(hostApis.begin(), hostApis.end());
 
-	// std::vector<audio::DeviceInfo> devicesInfo;
+	// std::vector<uss::core::DeviceInfo> devicesInfo;
 	// context.listDevicesInfo(std::back_inserter(devicesInfo));
 	// printDevicesInfo(devicesInfo.begin(), devicesInfo.end(), hostApis.begin());
 
 	int devIndex = hostApis[0].defaultOutputDeviceIndex;
 	std::cout << "Opening output device " << devIndex << std::endl;
-	audio::Device device(&context, devIndex);
-	device.open(2, 44100);
+	uss::core::Device device(&context, devIndex);
+	device.channels = 2;
+	device.latency = device.deviceInfo.output.defaultLowLatency;
+	device.format = uss::core::Format::Float32;
 
-	audio::modular::Instrument synthesizer;
-	context.setInstrument(&synthesizer);
+	context.device_out = &device;
 	
-	audio::modular::Enveloppe enveloppe(&synthesizer);
+	uss::modular::Enveloppe enveloppe(&context);
 	enveloppe.attack.value = 0.01f;
 	enveloppe.decay.value = 0.01f;
 	enveloppe.release.value = 0.01f;
 	enveloppe.attackLevel.value = 1.0f;
 	enveloppe.sustainLevel.value = 1.0f;
 
-	audio::modular::Oscillator trigger(&synthesizer);
-	trigger.wavetable = &audio::squaretable;
+	uss::modular::Oscillator trigger(&context);
+	trigger.wavetable = &uss::core::squaretable;
 	trigger.unipolar = true;
 	trigger.frequency.value = 20.0f;
 	trigger.destination.connect(&enveloppe.gate);
 
-	audio::modular::Oscillator osc(&synthesizer);
+	uss::modular::Oscillator osc(&context);
 	osc.frequency.value = 500.0f;
 	osc.destination.connect(&enveloppe.input);
-	// enveloppe.destination.connect(&osc.modulation);
 
-	audio::modular::Mixer mixer(&synthesizer);
+	uss::modular::Mixer mixer(&context);
 	enveloppe.destination.connect(&mixer.getMonoInput(0));
 	mixer.destination.connect(&device.output);
 
 	std::size_t count = 0;
-	device.start();
+	context.start(44100, 64);
 	while (true) {
 		std::this_thread::sleep_for(10ms);
 		std::cout << "env: " << enveloppe.enveloppe.value << std::endl;
@@ -98,8 +99,8 @@ int main(int argc, char const *argv[]) {
 			break;
 	}
 
-	device.stop();
-	device.close();
+	context.stop();
+	context.close();
 
 	return 0;
 }

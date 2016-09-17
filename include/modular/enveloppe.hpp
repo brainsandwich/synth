@@ -1,11 +1,11 @@
 #pragma once
 
-#include "modular/nodes/node.hpp"
+#include "core/node.hpp"
 
-namespace audio {
+namespace uss {
 	namespace modular {
 		
-		struct Enveloppe : Node {
+		struct Enveloppe : core::Node {
 			enum class State {
 				Idle,
 				Attack,
@@ -15,23 +15,23 @@ namespace audio {
 			} state = State::Idle;
 
 			// Common
-			MonoSignal gate;
-			MonoSignal input;
-			MonoSignal enveloppe;
-			MonoSignal destination;
+			core::MonoSignal gate;
+			core::MonoSignal input;
+			core::MonoSignal enveloppe;
+			core::MonoSignal destination;
 
 			// Time
-			MonoSignal attack;
-			MonoSignal decay;
-			MonoSignal release;
+			core::MonoSignal attack;
+			core::MonoSignal decay;
+			core::MonoSignal release;
 
 			// Levels
-			MonoSignal attackLevel;
-			MonoSignal sustainLevel;
+			core::MonoSignal attackLevel;
+			core::MonoSignal sustainLevel;
 
 			bool exponential = true;
 
-			Enveloppe(Instrument* context) : Node(context) {}
+			Enveloppe(core::Context* context) : core::Node(context) {}
 			virtual void update(double sampleRate) override {
 				switch (state) {
 					case State::Idle:
@@ -82,7 +82,7 @@ namespace audio {
 						break;
 				}
 
-				enveloppe.value = audio::clamp(enveloppe.value, 0.0f, 1.0f);
+				enveloppe.value = core::clamp(enveloppe.value, 0.0f, 1.0f);
 				destination.value = enveloppe.value * input.value;
 
 				enveloppe.update();
@@ -92,7 +92,7 @@ namespace audio {
 			}
 
 			float modulate(float current, float target, float timevalue, double sampleRate) {
-				float alpha = 1.0 - exp(-(1.0 / sampleRate) / (std::max(timevalue, 0.0001f) / 5.0f));
+				float alpha = 1.0 - core::exp(-(1.0 / sampleRate) / (std::max(timevalue, 0.0001f) / 5.0f));
 				return current * (1.0 - alpha) + target * alpha;
 				// return 1.0 + (log(std::max(target, 0.001f)) - log(std::max(current, 0.001f))) / (timevalue / sampleRate);
 			}

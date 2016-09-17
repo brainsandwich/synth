@@ -1,16 +1,16 @@
 #pragma once
 
-#include "modular/nodes/node.hpp"
+#include "core/node.hpp"
 
-namespace audio {
+namespace uss {
 	namespace modular {
-		struct Gain : Node {
-			MonoSignal input;
-			MonoSignal gain;
-			MonoSignal offset;
-			MonoSignal destination;
+		struct Gain : core::Node {
+			core::MonoSignal input;
+			core::MonoSignal gain;
+			core::MonoSignal offset;
+			core::MonoSignal destination;
 
-			Gain(Instrument* context) : Node(context) {}
+			Gain(core::Context* context) : core::Node(context) {}
 			virtual void update(double sampleRate) override {
 				destination.value = input.value * gain.value + offset.value;
 				

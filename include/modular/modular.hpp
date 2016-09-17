@@ -1,4 +1,7 @@
 #pragma once
 
-#include "modular/nodes/nodes.hpp"
-#include "modular/instrument.hpp"
+#include "modular/oscillator.hpp"
+#include "modular/mixer.hpp"
+#include "modular/gain.hpp"
+#include "modular/filter.hpp"
+#include "modular/enveloppe.hpp"
