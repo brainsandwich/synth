@@ -117,5 +117,25 @@ namespace uss {
 		T exp(T value) {
 			return 1.0 + value + (value * value) / 2.0;
 		}
+
+		template <typename T>
+		T ntf(uint8_t note) {
+			return 440.0 * std::pow(2.0, ((T) note - 42.0) / 12.0);
+		}
+
+		template <typename T>
+		uint8_t ftn(T freq) {
+			return (uint8_t)(12.0 * std::log2(freq / 440.0)) + 49;
+		}
+
+		template <typename T>
+		T ftbpm(T freq) {
+			return freq * 60.0;
+		}
+
+		template <typename T>
+		T bpmtf(T bpm) {
+			return bpm / 60.0;
+		}
 	}
 }
