@@ -67,6 +67,8 @@ namespace uss {
 			std::vector<MonoSignal*> targets;
 			float value = 0.0f;
 
+			MonoSignal() {}
+			MonoSignal(float value) : value(value) {}
 			void update() override;
 			void connect(MonoSignal* signal);
 			void disconnect(MonoSignal* signal);
@@ -77,6 +79,8 @@ namespace uss {
 			float left = 0.0f;
 			float right = 0.0f;
 
+			StereoSignal() {}
+			StereoSignal(float left, float right) : left(left), right(right) {}
 			void update() override;
 			void connect(StereoSignal* signal);
 			void disconnect(StereoSignal* signal);
