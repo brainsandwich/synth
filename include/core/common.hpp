@@ -12,6 +12,9 @@ namespace uss {
 	namespace core {
 
 		const float MIN_FREQ = 0.00001f;
+		const float GATE_THRESHOLD = 0.5f;
+		const float GATE_LOW = 0.0f;
+		const float GATE_HIGH = 1.0f;
 		
 		// -------------------------------------------------------------
 		// Info

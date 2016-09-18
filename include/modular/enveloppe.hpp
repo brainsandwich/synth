@@ -36,14 +36,13 @@ namespace uss {
 				switch (state) {
 					case State::Idle:
 					{
-						enveloppe.value = 0.0f;
-						if (gate.value >= 0.9f)
+						if (gate.value > core::GATE_THRESHOLD)
 							state = State::Attack;
 						break;
 					}
 					case State::Attack:
 					{
-						if (gate.value <= 0.1f) {
+						if (gate.value < core::GATE_THRESHOLD) {
 							state = State::Release;
 							break;
 						}
@@ -55,7 +54,7 @@ namespace uss {
 					}
 					case State::Decay:
 					{
-						if (gate.value <= 0.1f) {
+						if (gate.value < core::GATE_THRESHOLD) {
 							state = State::Release;
 							break;
 						}
@@ -66,13 +65,13 @@ namespace uss {
 						break;
 					}
 					case State::Sustain:
-						if (gate.value <= 0.1f) {
+						if (gate.value < core::GATE_THRESHOLD) {
 							state = State::Release;
 							break;
 						}
 						break;
 					case State::Release:
-						if (gate.value >= 0.9f)
+						if (gate.value > core::GATE_THRESHOLD)
 							state = State::Attack;
 
 						// enveloppe.value = enveloppe.value - release.value;
