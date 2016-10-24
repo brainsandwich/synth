@@ -1,5 +1,7 @@
 #pragma once
 
+#include "uss/core/node.hpp"
+
 namespace uss {
 	namespace modular {
 		

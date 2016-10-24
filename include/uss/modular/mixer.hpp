@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/node.hpp"
+#include "uss/core/node.hpp"
 
 #include <iostream>
 

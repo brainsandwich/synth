@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/common.hpp"
-#include "core/node.hpp"
+#include "uss/core/common.hpp"
+#include "uss/core/node.hpp"
 
 #include "portaudio.h"
 
