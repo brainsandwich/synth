@@ -30,8 +30,8 @@ namespace uss {
 			void stop();
 			void close();
 
-			Device* device_in;
-			Device* device_out;
+			Device* device_in = nullptr;
+			Device* device_out = nullptr;
 
 			StreamInfo streamInfo;
 			StreamInfo getStreamInfo() const;
