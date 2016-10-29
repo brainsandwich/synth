@@ -17,14 +17,16 @@ namespace uss {
 		struct Sequencer : core::Node {
 			using note_pair = std::pair<std::shared_ptr<core::MonoSignal>, bool>;
 			std::vector<note_pair> notes;
-			core::MonoSignal clock;
+			core::MonoSignal clockRate;
 			core::MonoSignal baseNote;
 			core::MonoSignal noteLength;
+			core::MonoSignal noteRate;
 
 			core::MonoSignal currentNote;
 			core::MonoSignal gate;
 
 			double gate_time = 0.0;
+			double timer = 0.0;
 			float lastclk = 0.0f;
 			std::size_t note_offset = 0;
 
@@ -36,30 +38,33 @@ namespace uss {
 				: core::Node(context)
 			{
 				gate.value = core::GATE_LOW;
+				noteRate.value = 1.0;
 			}
 
 			virtual void update(double rate) override {
 
-				// Rising edge
+				timer += 1.0 / (noteRate.value * rate);
 				switch (state) {
 					case GateState::LOW: {
-						if (clock.value > core::GATE_THRESHOLD) {
+						if (timer > 1.0 / (2.0 * clockRate.value)) {
 							state = GateState::HIGH;
 							gate_time = 0.0;
 							gate.value = notes[note_offset].second ? core::GATE_HIGH : core::GATE_LOW;
 
 							if (!notes.empty() && notes[note_offset].second) 
 								currentNote.value = baseNote.value + notes[note_offset].first->value;
-							
+
 							note_offset++;
-							if (note_offset >= notes.size())
-								note_offset = 0;
+							note_offset %= notes.size();
+							timer -= 1.0 / (2.0 * clockRate.value);
 						}
 						break;
 					}
 					case GateState::HIGH: {
-						if (clock.value < core::GATE_THRESHOLD)
+						if (timer > 1.0 / (2.0 * clockRate.value)) {
 							state = GateState::LOW;
+							timer -= 1.0 / (2.0 * clockRate.value);
+						}
 						break;
 					}
 				}
@@ -75,9 +80,10 @@ namespace uss {
 				for (auto& n: notes)
 					n.first->update();
 
-				clock.update();
+				clockRate.update();
 				baseNote.update();
 				noteLength.update();
+				noteRate.update();
 
 				currentNote.update();
 				gate.update();
