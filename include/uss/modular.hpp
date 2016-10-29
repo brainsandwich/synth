@@ -8,3 +8,4 @@
 #include "uss/modular/sequencer.hpp"
 #include "uss/modular/clock.hpp"
 #include "uss/modular/clockdiv.hpp"
+#include "uss/modular/saturator.hpp"
