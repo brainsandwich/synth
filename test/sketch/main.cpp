@@ -7,7 +7,7 @@
 #include <chrono>
 #include <thread>
 
-#include <audio.hpp>
+#include <uss.hpp>
 
 template <typename Input>
 void printHostApis(Input first, Input last) {
@@ -49,41 +49,94 @@ void printDevicesInfo(InputDevices first, InputDevices last, InputHostApis hostA
 int main(int argc, char const *argv[]) {
 	using namespace std::chrono_literals;
 
-	audio::Context context;
+	uss::core::init_wavetables();
+	uss::core::Context context;
 
-	std::vector<audio::HostApi> hostApis;
+	std::vector<uss::core::HostApi> hostApis;
 	context.listHostApis(std::back_inserter(hostApis));
 	printHostApis(hostApis.begin(), hostApis.end());
 
-	// std::vector<audio::DeviceInfo> devicesInfo;
-	// context.listDevicesInfo(std::back_inserter(devicesInfo));
-	// printDevicesInfo(devicesInfo.begin(), devicesInfo.end(), hostApis.begin());
+	std::vector<uss::core::DeviceInfo> devicesInfo;
+	context.listDevicesInfo(std::back_inserter(devicesInfo));
+	printDevicesInfo(devicesInfo.begin(), devicesInfo.end(), hostApis.begin());
 
 	int devIndex = hostApis[0].defaultOutputDeviceIndex;
-	std::cout << "Opening output device " << devIndex << std::endl;
-	audio::Device device(&context, devIndex);
-	device.open(2, 44100);
+	std::cout << "Opening output device " << devIndex << " using API " << hostApis[0].name << std::endl;
+	uss::core::Device device(&context, devIndex);
+	device.channels = 2;
+	device.latency = device.deviceInfo.output.defaultLowLatency;
+	device.format = uss::core::Format::Float32;
 
-	audio::modular::Instrument synthesizer;
-	context.setInstrument(&synthesizer);
+	context.device_out = &device;
 	
-	audio::modular::Oscillator osc(&synthesizer);
-	osc.frequency.value = 1000.0f;
+	uss::modular::Enveloppe enveloppe(&context);
+	enveloppe.attack.value = 0.01f;
+	enveloppe.decay.value = 0.01f;
+	enveloppe.release.value = 0.5f;
+	enveloppe.attackLevel.value = 1.0f;
+	enveloppe.sustainLevel.value = 1.0f;
 
-	audio::modular::Mixer mixer(&synthesizer);
-	osc.destination.connect(&mixer.getMonoInput(0));
+	uss::modular::Sequencer sequencer(&context);
+	sequencer.clockRate = uss::bpmtf(120.0);
+	sequencer.noteRate = 0.25f;
+	sequencer.noteLength.value = 0.005f;
+	sequencer.gate.connect(&enveloppe.gate);
+	sequencer
+		.addNote(uss::ntf(25))
+		.addNote(uss::ntf(25))
+		.addNote(uss::ntf(2))
+		.addNote(uss::ntf(2))
+		.addNote(uss::ntf(2))
+		.addNote(uss::ntf(2))
+		.addNote(uss::ntf(28))
+		.addNote(uss::ntf(28))
+		.addNote(uss::ntf(28))
+		.addNote(uss::ntf(28))
+		.addNote(uss::ntf(28))
+		.addNote(uss::ntf(28))
+		.addNote(uss::ntf(29))
+		.addNote(uss::ntf(29))
+		.addNote(uss::ntf(35))
+		.addNote(uss::ntf(35));
+
+	uss::modular::Oscillator lfo(&context);
+	lfo.frequency.value = uss::bpmtf(120.0f) / 16.0f;
+	lfo.unipolar = true;
+
+	uss::modular::Gain lfogain(&context);
+	lfogain.gain.value = 500.0f;
+	lfogain.offset.value = 200.0f;
+	lfo.destination.connect(&lfogain.input);
+
+	uss::modular::Oscillator osc(&context);
+	sequencer.currentNote.connect(&osc.frequency);
+	osc.destination.connect(&enveloppe.input);
+	osc.wavetable = &uss::core::squaretable;
+
+	uss::modular::Mixer mixer(&context);
 	mixer.destination.connect(&device.output);
 
+	uss::modular::LowPassFilter lpf(&context);
+	lpf.quality = 0.1f;
+	lpf.cutoff = 500.0f;
+	enveloppe.destination.connect(&lpf.input);
+	lfogain.destination.connect(&lpf.cutoff);
+	
+	uss::modular::Saturator saturator(&context);
+	saturator.hardness.value = 12.5f;
+	lpf.destination.connect(&saturator.input);
+	saturator.destination.connect(&mixer.getMonoInput(0));
+
 	std::size_t count = 0;
-	device.start();
+	context.start(96000, 32);
 	while (true) {
-		std::this_thread::sleep_for(10ms);
-		if (count++ >= 3000)
+		std::this_thread::sleep_for(1ms);
+		if (count++ >= 30000)
 			break;
 	}
 
-	device.stop();
-	device.close();
+	context.stop();
+	context.close();
 
 	return 0;
 }

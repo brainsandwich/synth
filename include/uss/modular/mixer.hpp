@@ -1,17 +1,17 @@
 #pragma once
 
-#include "modular/nodes/node.hpp"
+#include "uss/core/node.hpp"
 
 #include <iostream>
 
-namespace audio {
+namespace uss {
 	namespace modular {
-		struct Mixer : Node {
-			std::vector<std::shared_ptr<MonoSignal>> monoinputs;
-			std::vector<std::shared_ptr<StereoSignal>> stereoinputs;
-			StereoSignal destination;
+		struct Mixer : core::Node {
+			std::vector<std::shared_ptr<core::MonoSignal>> monoinputs;
+			std::vector<std::shared_ptr<core::StereoSignal>> stereoinputs;
+			core::StereoSignal destination;
 
-			Mixer(Instrument* context) : Node(context) {}
+			Mixer(core::Context* context) : core::Node(context) {}
 			virtual void update(double sampleRate) override {
 				destination.left = 0.0f;
 				destination.right = 0.0f;
@@ -30,16 +30,16 @@ namespace audio {
 				destination.update();
 			}
 
-			MonoSignal& getMonoInput(std::size_t index) {
+			core::MonoSignal& getMonoInput(std::size_t index) {
 				if (index >= monoinputs.size())
-					monoinputs.resize(index + 1, std::make_shared<MonoSignal>());
+					monoinputs.resize(index + 1, std::make_shared<core::MonoSignal>());
 
 				return *(monoinputs[index].get());
 			}
 
-			StereoSignal& getStereoInput(std::size_t index) {
+			core::StereoSignal& getStereoInput(std::size_t index) {
 				if (index >= stereoinputs.size())
-					stereoinputs.resize(index + 1, std::make_shared<StereoSignal>());
+					stereoinputs.resize(index + 1, std::make_shared<core::StereoSignal>());
 
 				return *(stereoinputs[index].get());
 			}

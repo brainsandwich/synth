@@ -1,23 +1,23 @@
 #pragma once
 
-#include "modular/nodes/nodes.hpp"
+#include "uss/core/node.hpp"
 
 #include <iostream>
 #include <cmath>
 
-namespace audio {
+namespace uss {
 	namespace modular {
 	
-		struct Oscillator : Node {
-			MonoSignal frequency;
-			MonoSignal modulation;
-			MonoSignal destination;
+		struct Oscillator : core::Node {
+			core::MonoSignal frequency;
+			core::MonoSignal modulation;
+			core::MonoSignal destination;
 
-			WaveTable* wavetable = &sinetable;
+			core::WaveTable* wavetable = &core::sinetable;
 			bool unipolar = false;
 			double offset = 0.0;
 
-			Oscillator(Instrument* context) : Node(context) {}
+			Oscillator(core::Context* context) : core::Node(context) {}
 
 			virtual void update(double sampleRate) override {
 				if (!wavetable) {
@@ -29,9 +29,9 @@ namespace audio {
 
 				auto& table = *wavetable;
 
-				float base_freq = frequency.value > MIN_FREQ ? frequency.value : MIN_FREQ;
-				float mod_freq = modulation.value > MIN_FREQ ? modulation.value : MIN_FREQ;
-				float freq = (base_freq + base_freq * mod_freq) > MIN_FREQ ? (base_freq + base_freq * mod_freq) : MIN_FREQ;
+				float base_freq = frequency.value > core::MIN_FREQ ? frequency.value : core::MIN_FREQ;
+				float mod_freq = modulation.value > core::MIN_FREQ ? modulation.value : core::MIN_FREQ;
+				float freq = (base_freq + base_freq * mod_freq) > core::MIN_FREQ ? (base_freq + base_freq * mod_freq) : core::MIN_FREQ;
 
 				double inc = table.size() * freq / sampleRate;
 				offset = offset >= table.size() ? offset - table.size() : offset;

@@ -1,15 +1,15 @@
 #pragma once
 
-#include "modular/nodes/node.hpp"
+#include "uss/core/node.hpp"
 
-namespace audio {
+namespace uss {
 	namespace modular {
-		struct Filter : Node {
-			MonoSignal input;
-			MonoSignal quality;
-			MonoSignal cutoff;
-			MonoSignal destination;
-			Filter(Instrument* context) : Node(context) {}
+		struct Filter : core::Node {
+			core::MonoSignal input;
+			core::MonoSignal quality;
+			core::MonoSignal cutoff;
+			core::MonoSignal destination;
+			Filter(core::Context* context) : core::Node(context) {}
 			virtual void update(double sampleRate) = 0;
 		};
 
@@ -20,14 +20,14 @@ namespace audio {
 				float a0 = 0.0f, a1 = 0.0f, a2 = 0.0f, b1 = 0.0f, b2 = 0.0f;
 			} cache;
 
-			LowPassFilter(Instrument* context)
+			LowPassFilter(core::Context* context)
 				: Filter(context) {}
 			virtual void update(double sampleRate) override {
 				if (cache.quality != quality.value || cache.cutoff != cutoff.value) {
 					cache.quality = quality.value;
 					cache.cutoff = cutoff.value;
 
-					float freq = cutoff.value > MIN_FREQ ? cutoff.value : MIN_FREQ;
+					float freq = cutoff.value > core::MIN_FREQ ? cutoff.value : core::MIN_FREQ;
 
 		    		float K = tan(PI * freq / (float) sampleRate);
 		            float norm = 1.0f / (1.0f + K / quality.value + K * K);
