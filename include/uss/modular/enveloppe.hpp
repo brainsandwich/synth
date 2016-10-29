@@ -81,7 +81,7 @@ namespace uss {
 						break;
 				}
 
-				enveloppe.value = core::clamp(enveloppe.value, 0.0f, 1.0f);
+				enveloppe.value = uss::clamp(enveloppe.value, 0.0f, 1.0f);
 				destination.value = enveloppe.value * input.value;
 
 				enveloppe.update();
@@ -91,7 +91,7 @@ namespace uss {
 			}
 
 			float modulate(float current, float target, float timevalue, double sampleRate) {
-				float alpha = 1.0 - core::exp(-(1.0 / sampleRate) / (std::max(timevalue, 0.0001f) / 5.0f));
+				float alpha = 1.0 - uss::exp(-(1.0 / sampleRate) / (std::max(timevalue, 0.0001f) / 5.0f));
 				return current * (1.0 - alpha) + target * alpha;
 				// return 1.0 + (log(std::max(target, 0.001f)) - log(std::max(current, 0.001f))) / (timevalue / sampleRate);
 			}

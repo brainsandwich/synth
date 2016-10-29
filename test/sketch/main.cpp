@@ -56,12 +56,12 @@ int main(int argc, char const *argv[]) {
 	context.listHostApis(std::back_inserter(hostApis));
 	printHostApis(hostApis.begin(), hostApis.end());
 
-	// std::vector<uss::core::DeviceInfo> devicesInfo;
-	// context.listDevicesInfo(std::back_inserter(devicesInfo));
-	// printDevicesInfo(devicesInfo.begin(), devicesInfo.end(), hostApis.begin());
+	std::vector<uss::core::DeviceInfo> devicesInfo;
+	context.listDevicesInfo(std::back_inserter(devicesInfo));
+	printDevicesInfo(devicesInfo.begin(), devicesInfo.end(), hostApis.begin());
 
 	int devIndex = hostApis[0].defaultOutputDeviceIndex;
-	std::cout << "Opening output device " << devIndex << std::endl;
+	std::cout << "Opening output device " << devIndex << " using API " << hostApis[0].name << std::endl;
 	uss::core::Device device(&context, devIndex);
 	device.channels = 2;
 	device.latency = device.deviceInfo.output.defaultLowLatency;
@@ -76,32 +76,37 @@ int main(int argc, char const *argv[]) {
 	enveloppe.attackLevel.value = 1.0f;
 	enveloppe.sustainLevel.value = 1.0f;
 
-	uss::modular::Clock clk(&context);
-	clk.frequency.value = uss::core::bpmtf(120.0 * 5.0f);
-
 	uss::modular::Sequencer sequencer(&context);
-	clk.destination.connect(&sequencer.clock);
+	sequencer.clockRate = uss::bpmtf(120.0);
+	sequencer.noteRate = 0.25f;
 	sequencer.noteLength.value = 0.005f;
 	sequencer.gate.connect(&enveloppe.gate);
 	sequencer
-		.addNote(60.0f)
-		.addNote(60.0f)
-		.addNote(60.0f)
-		.addNote(240.0f)
-		.addNote(60.0f)
-		.addNote(60.0f)
-		.addNote(160.0f)
-		.addNote(130.0f);
+		.addNote(uss::ntf(25))
+		.addNote(uss::ntf(25))
+		.addNote(uss::ntf(2))
+		.addNote(uss::ntf(2))
+		.addNote(uss::ntf(2))
+		.addNote(uss::ntf(2))
+		.addNote(uss::ntf(28))
+		.addNote(uss::ntf(28))
+		.addNote(uss::ntf(28))
+		.addNote(uss::ntf(28))
+		.addNote(uss::ntf(28))
+		.addNote(uss::ntf(28))
+		.addNote(uss::ntf(29))
+		.addNote(uss::ntf(29))
+		.addNote(uss::ntf(35))
+		.addNote(uss::ntf(35));
 
 	uss::modular::Oscillator lfo(&context);
-	lfo.frequency.value = 0.1f;
+	lfo.frequency.value = uss::bpmtf(120.0f) / 16.0f;
 	lfo.unipolar = true;
 
 	uss::modular::Gain lfogain(&context);
-	lfogain.gain.value = 0.1f;
-	lfogain.offset.value = 0.01f;
+	lfogain.gain.value = 500.0f;
+	lfogain.offset.value = 200.0f;
 	lfo.destination.connect(&lfogain.input);
-	lfogain.destination.connect(&sequencer.noteLength);
 
 	uss::modular::Oscillator osc(&context);
 	sequencer.currentNote.connect(&osc.frequency);
@@ -112,13 +117,18 @@ int main(int argc, char const *argv[]) {
 	mixer.destination.connect(&device.output);
 
 	uss::modular::LowPassFilter lpf(&context);
-	lpf.quality = 4.7f;
+	lpf.quality = 0.1f;
 	lpf.cutoff = 500.0f;
-	lpf.destination.connect(&mixer.getMonoInput(0));
 	enveloppe.destination.connect(&lpf.input);
+	lfogain.destination.connect(&lpf.cutoff);
+	
+	uss::modular::Saturator saturator(&context);
+	saturator.hardness.value = 12.5f;
+	lpf.destination.connect(&saturator.input);
+	saturator.destination.connect(&mixer.getMonoInput(0));
 
 	std::size_t count = 0;
-	context.start(44100, 64);
+	context.start(96000, 32);
 	while (true) {
 		std::this_thread::sleep_for(1ms);
 		if (count++ >= 30000)
